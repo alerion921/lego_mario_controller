@@ -3,6 +3,13 @@ import wx
 from wxasync import WxAsyncApp, StartCoroutine
 from pynput.keyboard import Key, Controller
 from bleak import BleakScanner, BleakClient, BleakError
+import logging
+import os
+
+# Configure logging to store the log file in the script's directory
+script_dir = os.path.dirname(os.path.abspath(__file__))
+log_file_path = os.path.join(script_dir, "tile_log.txt")
+logging.basicConfig(filename=log_file_path, level=logging.INFO, format="%(asctime)s - %(message)s")
 
 # Key assignments
 KEY_JUMP = 'a'
@@ -110,9 +117,13 @@ class MarioController:
                 if data[4] == 0xb8:
                     self.gui.cam_field.SetLabel("Start tile")
                     self.current_tile = 3
-                if data[4] == 0xb7:
+                elif data[4] == 0xb7:
                     self.gui.cam_field.SetLabel("Goal tile")
                     self.current_tile = 4
+                else:
+                    # Log unknown tiles
+                    logging.info("Unknown tile detected: " + " ".join(hex(n) for n in data))
+                    self.gui.cam_field.SetLabel("Unknown tile")
                 print("Barcode: " + " ".join(hex(n) for n in data))
 
             # Red tile
